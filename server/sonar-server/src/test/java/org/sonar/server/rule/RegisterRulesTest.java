@@ -57,6 +57,7 @@ import org.sonar.server.rule.index.RuleIndexer;
 import org.sonar.server.rule.index.RuleQuery;
 
 import static com.google.common.collect.Sets.newHashSet;
+import static java.lang.String.valueOf;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang.RandomStringUtils.randomAlphanumeric;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -135,7 +136,8 @@ public class RegisterRulesTest {
     assertThat(param.getDefaultValue()).isEqualTo("default1");
 
     // verify index
-    assertThat(ruleIndex.search(new RuleQuery(), new SearchOptions()).getIds()).containsOnly(RULE_KEY1, RULE_KEY2);
+    RuleDto rule2 = dbClient.ruleDao().selectOrFailByKey(dbTester.getSession(), dbTester.getDefaultOrganization(), RULE_KEY2);
+    assertThat(ruleIndex.search(new RuleQuery(), new SearchOptions()).getIds()).containsOnly(rule1.getId(), rule2.getId());
 
     // verify repositories
     assertThat(dbClient.ruleRepositoryDao().selectAll(dbTester.getSession())).extracting(RuleRepositoryDto::getKey).containsOnly("fake");
@@ -148,22 +150,23 @@ public class RegisterRulesTest {
     // register one rule
     execute(context -> {
       RulesDefinition.NewRepository repo = context.createRepository("fake", "java");
-      repo.createRule(ruleKey)
+      repo.createRule(ruleKey.toString())
         .setName(randomAlphanumeric(5))
         .setHtmlDescription(randomAlphanumeric(20));
       repo.done();
     });
 
     // verify db
-    assertThat(dbClient.ruleDao().selectAllDefinitions(dbTester.getSession()))
+    List<RuleDefinitionDto> rules = dbClient.ruleDao().selectAllDefinitions(dbTester.getSession());
+    assertThat(rules)
       .extracting(RuleDefinitionDto::getKey)
       .extracting(RuleKey::rule)
       .containsExactly(ruleKey);
+    RuleDefinitionDto rule = rules.iterator().next();
 
     // verify index
     assertThat(ruleIndex.search(new RuleQuery(), new SearchOptions()).getIds())
-      .extracting(RuleKey::rule)
-      .containsExactly(ruleKey);
+      .containsExactly(rule.getId());
 
     // register no rule
     execute(context -> context.createRepository("fake", "java").done());
@@ -179,7 +182,6 @@ public class RegisterRulesTest {
 
     // verify index
     assertThat(ruleIndex.search(new RuleQuery(), new SearchOptions()).getIds())
-      .extracting(RuleKey::rule)
       .isEmpty();
   }
 
@@ -240,11 +242,11 @@ public class RegisterRulesTest {
   public void update_and_remove_rules_on_changes() {
     execute(new FakeRepositoryV1());
     assertThat(dbClient.ruleDao().selectAllDefinitions(dbTester.getSession())).hasSize(2);
-    assertThat(esTester.getIds(RuleIndexDefinition.INDEX_TYPE_RULE)).containsOnly(RULE_KEY1.toString(), RULE_KEY2.toString());
+    RuleDto rule1 = dbClient.ruleDao().selectOrFailByKey(dbTester.getSession(), defaultOrganization, RULE_KEY1);
+    RuleDto rule2 = dbClient.ruleDao().selectOrFailByKey(dbTester.getSession(), defaultOrganization, RULE_KEY2);
+    assertThat(esTester.getIds(RuleIndexDefinition.INDEX_TYPE_RULE)).containsOnly(valueOf(rule1.getId()), valueOf(rule2.getId()));
 
     // user adds tags and sets markdown note
-    OrganizationDto defaultOrganization = dbTester.getDefaultOrganization();
-    RuleDto rule1 = dbClient.ruleDao().selectOrFailByKey(dbTester.getSession(), defaultOrganization, RULE_KEY1);
     rule1.setTags(newHashSet("usertag1", "usertag2"));
     rule1.setNoteData("user *note*");
     rule1.setNoteUserLogin("marius");
@@ -277,7 +279,7 @@ public class RegisterRulesTest {
     assertThat(param.getDefaultValue()).isEqualTo("default1 v2");
 
     // rule2 has been removed -> status set to REMOVED but db row is not deleted
-    RuleDto rule2 = dbClient.ruleDao().selectOrFailByKey(dbTester.getSession(), defaultOrganization, RULE_KEY2);
+    rule2 = dbClient.ruleDao().selectOrFailByKey(dbTester.getSession(), defaultOrganization, RULE_KEY2);
     assertThat(rule2.getStatus()).isEqualTo(RuleStatus.REMOVED);
     assertThat(rule2.getUpdatedAt()).isEqualTo(DATE2.getTime());
 
@@ -287,7 +289,7 @@ public class RegisterRulesTest {
     assertThat(rule3.getStatus()).isEqualTo(RuleStatus.READY);
 
     // verify index
-    assertThat(ruleIndex.search(new RuleQuery(), new SearchOptions()).getIds()).containsOnly(RULE_KEY1, RULE_KEY3);
+    assertThat(ruleIndex.search(new RuleQuery(), new SearchOptions()).getIds()).containsOnly(rule1.getId(), rule3.getId());
 
     // verify repositories
     assertThat(dbClient.ruleRepositoryDao().selectAll(dbTester.getSession())).extracting(RuleRepositoryDto::getKey).containsOnly("fake");
@@ -438,24 +440,25 @@ public class RegisterRulesTest {
   public void do_not_update_already_removed_rules() {
     execute(new FakeRepositoryV1());
     assertThat(dbClient.ruleDao().selectAllDefinitions(dbTester.getSession())).hasSize(2);
-    assertThat(esTester.getIds(RuleIndexDefinition.INDEX_TYPE_RULE)).containsOnly(RULE_KEY1.toString(), RULE_KEY2.toString());
-
-    String organizationUuid = dbTester.getDefaultOrganization().getUuid();
+    RuleDto rule1 = dbClient.ruleDao().selectOrFailByKey(dbTester.getSession(), defaultOrganization, RULE_KEY1);
     RuleDto rule2 = dbClient.ruleDao().selectOrFailByKey(dbTester.getSession(), defaultOrganization, RULE_KEY2);
+    assertThat(esTester.getIds(RuleIndexDefinition.INDEX_TYPE_RULE)).containsOnly(valueOf(rule1.getId()), valueOf(rule2.getId()));
+
     assertThat(rule2.getStatus()).isEqualTo(RuleStatus.READY);
 
     when(system.now()).thenReturn(DATE2.getTime());
     execute(new FakeRepositoryV2());
 
     // On MySQL, need to update a rule otherwise rule2 will be seen as READY, but why ???
-    dbClient.ruleDao().update(dbTester.getSession(), dbClient.ruleDao().selectOrFailByKey(dbTester.getSession(), defaultOrganization, RULE_KEY1).getDefinition());
+    dbClient.ruleDao().update(dbTester.getSession(), rule1.getDefinition());
     dbTester.getSession().commit();
 
     // rule2 is removed
     rule2 = dbClient.ruleDao().selectOrFailByKey(dbTester.getSession(), defaultOrganization, RULE_KEY2);
+    RuleDto rule3 = dbClient.ruleDao().selectOrFailByKey(dbTester.getSession(), defaultOrganization, RULE_KEY3);
     assertThat(rule2.getStatus()).isEqualTo(RuleStatus.REMOVED);
 
-    assertThat(ruleIndex.search(new RuleQuery(), new SearchOptions()).getIds()).containsOnly(RULE_KEY1, RULE_KEY3);
+    assertThat(ruleIndex.search(new RuleQuery(), new SearchOptions()).getIds()).containsOnly(rule1.getId(), rule3.getId());
 
     when(system.now()).thenReturn(DATE3.getTime());
     execute(new FakeRepositoryV2());
@@ -466,7 +469,7 @@ public class RegisterRulesTest {
     assertThat(rule2.getStatus()).isEqualTo(RuleStatus.REMOVED);
     assertThat(rule2.getUpdatedAt()).isEqualTo(DATE2.getTime());
 
-    assertThat(ruleIndex.search(new RuleQuery(), new SearchOptions()).getIds()).containsOnly(RULE_KEY1, RULE_KEY3);
+    assertThat(ruleIndex.search(new RuleQuery(), new SearchOptions()).getIds()).containsOnly(rule1.getId(), rule3.getId());
   }
 
   @Test
@@ -556,7 +559,7 @@ public class RegisterRulesTest {
     @Override
     public void define(Context context) {
       NewRepository repo = context.createRepository("fake", "java");
-      NewRule rule1 = repo.createRule("rule1")
+      NewRule rule1 = repo.createRule(RULE_KEY1.rule())
         .setName("One")
         .setHtmlDescription("Description of One")
         .setSeverity(BLOCKER)
@@ -570,7 +573,7 @@ public class RegisterRulesTest {
       rule1.createParam("param1").setDescription("parameter one").setDefaultValue("default1");
       rule1.createParam("param2").setDescription("parameter two").setDefaultValue("default2");
 
-      repo.createRule("rule2")
+      repo.createRule(RULE_KEY2.rule())
         .setName("Two")
         .setHtmlDescription("Minimal rule");
       repo.done();
@@ -586,7 +589,7 @@ public class RegisterRulesTest {
       NewRepository repo = context.createRepository("fake", "java");
 
       // almost all the attributes of rule1 are changed
-      NewRule rule1 = repo.createRule("rule1")
+      NewRule rule1 = repo.createRule(RULE_KEY1.rule())
         .setName("One v2")
         .setHtmlDescription("Description of One v2")
         .setSeverity(INFO)
@@ -601,7 +604,7 @@ public class RegisterRulesTest {
       rule1.createParam("param2").setDescription("parameter two v2").setDefaultValue("default2 v2");
 
       // rule2 is dropped, rule3 is new
-      repo.createRule("rule3")
+      repo.createRule(RULE_KEY3.rule())
         .setName("Three")
         .setHtmlDescription("Rule Three");
       repo.done();
