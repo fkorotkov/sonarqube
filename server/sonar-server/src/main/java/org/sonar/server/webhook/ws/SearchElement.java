@@ -17,13 +17,29 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-import { getJSON } from '../helpers/request';
-import throwGlobalError from '../app/utils/throwGlobalError';
-import { Webhook } from '../app/types';
+package org.sonar.server.webhook.ws;
 
-export function searchWebhooks(data: {
-  organization: string | undefined;
-  project?: string;
-}): Promise<{ webhooks: Webhook[] }> {
-  return getJSON('/api/webhooks/search', data).catch(throwGlobalError);
+public class SearchElement {
+
+  private final String key;
+  private final String name;
+  private final String url;
+
+  public SearchElement(String key, String name, String url) {
+    this.key = key;
+    this.name = name;
+    this.url = url;
+  }
+
+  public String getKey() {
+    return key;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public String getUrl() {
+    return url;
+  }
 }

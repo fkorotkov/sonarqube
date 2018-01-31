@@ -58,6 +58,22 @@ public class SettingsFinder {
       .collect(Collectors.toList());
   }
 
+  public List<Setting> loadProjectSettings(DbSession dbSession, ComponentDto project, String propertyKey) {
+    List<PropertyDto> properties = dbClient.propertiesDao().selectProjectProperties(dbSession, project.getKey())
+      .stream().filter(x -> x.getKey().equals(propertyKey))
+      .collect(Collectors.toList());
+
+    Set<String> propertySetKeys = getPropertySetKeys(properties);
+
+    List<PropertyDto> propertySets = dbClient.propertiesDao().selectProjectProperties(dbSession, project.getKey())
+      .stream().filter(x -> propertySetKeys.contains(x.getKey()))
+      .collect(Collectors.toList());
+
+    return properties.stream()
+      .map(property -> Setting.createFromDto(property, getPropertySets(property.getKey(), propertySets, project.getId()), definitions.get(property.getKey())))
+      .collect(Collectors.toList());
+  }
+
   /**
    * Return list of settings by component uuid, sorted from project to lowest module
    */
