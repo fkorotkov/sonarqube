@@ -18,11 +18,32 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 import { getJSON, post } from '../helpers/request';
-import { BranchLike } from '../app/types';
+import { BranchLike, PullRequest } from '../app/types';
 import throwGlobalError from '../app/utils/throwGlobalError';
 
+const samplePullRequest: PullRequest = {
+  analysisDate: '2017-01-02T00:00:00.000Z',
+  base: 'master',
+  branch: 'feature/stas/pr-api',
+  id: '2734',
+  name: 'SONAR-10374 Support pull request in the web app',
+  status: { bugs: 1, codeSmells: 3, vulnerabilities: 0 }
+};
+
+const samplePullRequest2: PullRequest = {
+  analysisDate: '2017-01-02T00:00:00.000Z',
+  base: 'branch-6.7',
+  branch: 'feature/stas/my-bug-fix',
+  id: '2725',
+  name: 'fix critical LTS issue',
+  status: { bugs: 0, codeSmells: 0, vulnerabilities: 0 }
+};
+
 export function getBranches(project: string): Promise<BranchLike[]> {
-  return getJSON('/api/project_branches/list', { project }).then(r => r.branches, throwGlobalError);
+  return getJSON('/api/project_branches/list', { project }).then(
+    r => [...r.branches, samplePullRequest, samplePullRequest2] as any,
+    throwGlobalError
+  );
 }
 
 export function deleteBranch(data: { project: string; branch?: string; pullRequest?: string }) {
