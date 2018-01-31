@@ -20,7 +20,7 @@
 import * as React from 'react';
 import { shallow } from 'enzyme';
 import { ComponentNavMeta } from '../ComponentNavMeta';
-import { BranchType, ShortLivingBranch, LongLivingBranch } from '../../../../types';
+import { BranchType, ShortLivingBranch, LongLivingBranch, PullRequest } from '../../../../types';
 
 const component = {
   analysisDate: '2017-01-02T00:00:00.000Z',
@@ -62,6 +62,26 @@ it('renders meta for long-living branch', () => {
     shallow(
       <ComponentNavMeta
         branchLike={branch}
+        component={component}
+        currentUser={{ isLoggedIn: false }}
+      />
+    )
+  ).toMatchSnapshot();
+});
+
+it('renders meta for pull request', () => {
+  const pullRequest: PullRequest = {
+    base: 'master',
+    branch: 'feature',
+    id: '1234',
+    name: 'Feature PR',
+    status: { bugs: 0, codeSmells: 2, vulnerabilities: 3 },
+    url: 'https://example.com/pull/1234'
+  };
+  expect(
+    shallow(
+      <ComponentNavMeta
+        branchLike={pullRequest}
         component={component}
         currentUser={{ isLoggedIn: false }}
       />

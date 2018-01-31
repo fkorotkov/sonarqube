@@ -69,6 +69,7 @@ export interface PullRequest extends BranchLike {
     codeSmells: number;
     vulnerabilities: number;
   };
+  url?: string;
 }
 
 export interface Extension {

@@ -20,6 +20,7 @@
 import * as React from 'react';
 import * as classNames from 'classnames';
 import * as PropTypes from 'prop-types';
+import { FormattedMessage } from 'react-intl';
 import ComponentNavBranchesMenu from './ComponentNavBranchesMenu';
 import SingleBranchHelperPopup from './SingleBranchHelperPopup';
 import NoBranchSupportPopup from './NoBranchSupportPopup';
@@ -29,7 +30,8 @@ import BranchIcon from '../../../../components/icons-components/BranchIcon';
 import {
   isShortLivingBranch,
   isSameBranchLike,
-  getBranchLikeDisplayName
+  getBranchLikeDisplayName,
+  isPullRequest
 } from '../../../../helpers/branches';
 import { translate } from '../../../../helpers/l10n';
 import HelpIcon from '../../../../components/icons-components/HelpIcon';
@@ -140,21 +142,35 @@ export default class ComponentNavBranch extends React.PureComponent<Props, State
 
   renderMergeBranch = () => {
     const { currentBranchLike } = this.props;
-    if (!isShortLivingBranch(currentBranchLike)) {
+    if (isShortLivingBranch(currentBranchLike)) {
+      return currentBranchLike.isOrphan ? (
+        <span className="note big-spacer-left text-lowercase">
+          {translate('branches.orphan_branch')}
+          <Tooltip overlay={translate('branches.orphan_branches.tooltip')}>
+            <i className="icon-help spacer-left" />
+          </Tooltip>
+        </span>
+      ) : (
+        <span className="note big-spacer-left text-lowercase">
+          {translate('from')} <strong>{currentBranchLike.mergeBranch}</strong>
+        </span>
+      );
+    } else if (isPullRequest(currentBranchLike)) {
+      return (
+        <span className="note big-spacer-left text-lowercase">
+          <FormattedMessage
+            defaultMessage={translate('branches.pull_request.for_merge_into_x_from_y')}
+            id="branches.pull_request.for_merge_into_x_from_y"
+            values={{
+              base: <strong>{currentBranchLike.base}</strong>,
+              branch: <strong>{currentBranchLike.branch}</strong>
+            }}
+          />
+        </span>
+      );
+    } else {
       return null;
     }
-    return currentBranchLike.isOrphan ? (
-      <span className="note big-spacer-left text-lowercase">
-        {translate('branches.orphan_branch')}
-        <Tooltip overlay={translate('branches.orphan_branches.tooltip')}>
-          <i className="icon-help spacer-left" />
-        </Tooltip>
-      </span>
-    ) : (
-      <span className="note big-spacer-left text-lowercase">
-        {translate('from')} <strong>{currentBranchLike.mergeBranch}</strong>
-      </span>
-    );
   };
 
   renderSingleBranchPopup = () => (

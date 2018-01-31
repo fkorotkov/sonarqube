@@ -25,7 +25,8 @@ import {
   ShortLivingBranch,
   MainBranch,
   Component,
-  LongLivingBranch
+  LongLivingBranch,
+  PullRequest
 } from '../../../../types';
 import { click } from '../../../../../helpers/testUtils';
 
@@ -61,6 +62,27 @@ it('renders short-living branch', () => {
         branchLikes={[branch, fooBranch]}
         component={component}
         currentBranchLike={branch}
+      />,
+      { context: { branchesEnabled: true } }
+    )
+  ).toMatchSnapshot();
+});
+
+it('renders pull request', () => {
+  const pullRequest: PullRequest = {
+    base: 'master',
+    branch: 'feature',
+    id: '1234',
+    name: 'Feature PR',
+    url: 'https://example.com/pull/1234'
+  };
+  const component = {} as Component;
+  expect(
+    shallow(
+      <ComponentNavBranch
+        branchLikes={[pullRequest, fooBranch]}
+        component={component}
+        currentBranchLike={pullRequest}
       />,
       { context: { branchesEnabled: true } }
     )

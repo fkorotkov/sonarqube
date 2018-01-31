@@ -28,7 +28,8 @@ import Tooltip from '../../../../components/controls/Tooltip';
 import {
   isShortLivingBranch,
   isMainBranch,
-  isLongLivingBranch
+  isLongLivingBranch,
+  isPullRequest
 } from '../../../../helpers/branches';
 import { translate } from '../../../../helpers/l10n';
 import { getCurrentUser } from '../../../../store/rootReducer';
@@ -76,8 +77,15 @@ export function ComponentNavMeta({ branchLike, component, currentUser }: Props) 
           />
         </div>
       )}
-      {isShortLivingBranch(branchLike) && (
+      {(isShortLivingBranch(branchLike) || isPullRequest(branchLike)) && (
         <div className="navbar-context-meta-secondary">
+          {isPullRequest(branchLike) &&
+            branchLike.url !== undefined && (
+              <a className="big-spacer-right" href={branchLike.url} rel="nofollow" target="_blank">
+                {translate('branches.see_the_pr')}
+                <i className="icon-detach little-spacer-left" />
+              </a>
+            )}
           <BranchStatus branchLike={branchLike} />
         </div>
       )}

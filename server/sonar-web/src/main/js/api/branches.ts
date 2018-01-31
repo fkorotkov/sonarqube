@@ -27,7 +27,8 @@ const samplePullRequest: PullRequest = {
   branch: 'feature/stas/pr-api',
   id: '2734',
   name: 'SONAR-10374 Support pull request in the web app',
-  status: { bugs: 1, codeSmells: 3, vulnerabilities: 0 }
+  status: { bugs: 1, codeSmells: 3, vulnerabilities: 0 },
+  url: 'https://github.com/SonarSource/sonarqube/pull/2734'
 };
 
 const samplePullRequest2: PullRequest = {
@@ -36,7 +37,8 @@ const samplePullRequest2: PullRequest = {
   branch: 'feature/stas/my-bug-fix',
   id: '2725',
   name: 'fix critical LTS issue',
-  status: { bugs: 0, codeSmells: 0, vulnerabilities: 0 }
+  status: { bugs: 0, codeSmells: 0, vulnerabilities: 0 },
+  url: 'https://github.com/SonarSource/sonarqube/pull/2725'
 };
 
 const orphanPullRequest: PullRequest = {
