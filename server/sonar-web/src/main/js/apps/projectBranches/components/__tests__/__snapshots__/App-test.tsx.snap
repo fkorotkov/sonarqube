@@ -29,16 +29,27 @@ exports[`renders sorted list of branches 1`] = `
         values={
           Object {
             "days": "100",
-            "settings": <Link
-              onlyActiveOnIndex={false}
-              style={Object {}}
-              to="/admin/settings"
-            >
-              settings.page
-            </Link>,
           }
         }
       />
+      <React.Fragment>
+        <br />
+        <FormattedMessage
+          defaultMessage="project_branches.page.life_time.admin"
+          id="project_branches.page.life_time.admin"
+          values={
+            Object {
+              "settings": <Link
+                onlyActiveOnIndex={false}
+                style={Object {}}
+                to="/admin/settings"
+              >
+                settings.page
+              </Link>,
+            }
+          }
+        />
+      </React.Fragment>
     </p>
   </header>
   <div
@@ -79,6 +90,19 @@ exports[`renders sorted list of branches 1`] = `
           }
           component="foo"
           key="branch-master"
+          onChange={[MockFunction]}
+        />
+        <BranchRow
+          branchLike={
+            Object {
+              "base": "master",
+              "branch": "feature",
+              "id": "1234",
+              "name": "Feature PR",
+            }
+          }
+          component="foo"
+          key="pull-request-1234"
           onChange={[MockFunction]}
         />
         <BranchRow

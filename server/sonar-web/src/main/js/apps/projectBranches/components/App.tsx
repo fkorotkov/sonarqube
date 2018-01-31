@@ -78,20 +78,23 @@ export default class App extends React.PureComponent<Props, State> {
       return null;
     }
 
-    const messageKey = this.props.canAdmin
-      ? 'project_branches.page.life_time.admin'
-      : 'project_branches.page.life_time';
-
     return (
       <p className="page-description">
         <FormattedMessage
-          defaultMessage={translate(messageKey)}
-          id={messageKey}
-          values={{
-            days: formatMeasure(this.state.branchLifeTime, 'INT'),
-            settings: <Link to="/admin/settings">{translate('settings.page')}</Link>
-          }}
+          defaultMessage={translate('project_branches.page.life_time')}
+          id="project_branches.page.life_time"
+          values={{ days: formatMeasure(this.state.branchLifeTime, 'INT') }}
         />
+        {this.props.canAdmin && (
+          <>
+            <br />
+            <FormattedMessage
+              defaultMessage={translate('project_branches.page.life_time.admin')}
+              id="project_branches.page.life_time.admin"
+              values={{ settings: <Link to="/admin/settings">{translate('settings.page')}</Link> }}
+            />
+          </>
+        )}
       </p>
     );
   }

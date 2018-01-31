@@ -39,9 +39,18 @@ const samplePullRequest2: PullRequest = {
   status: { bugs: 0, codeSmells: 0, vulnerabilities: 0 }
 };
 
+const orphanPullRequest: PullRequest = {
+  analysisDate: '2017-01-02T00:00:00.000Z',
+  base: 'unknown-branch',
+  branch: 'feature/stas/unknown-branch',
+  id: '9999',
+  name: 'create orphan pull request',
+  status: { bugs: 0, codeSmells: 0, vulnerabilities: 0 }
+};
+
 export function getBranches(project: string): Promise<BranchLike[]> {
   return getJSON('/api/project_branches/list', { project }).then(
-    r => [...r.branches, samplePullRequest, samplePullRequest2] as any,
+    r => [...r.branches, samplePullRequest, samplePullRequest2, orphanPullRequest] as any,
     throwGlobalError
   );
 }

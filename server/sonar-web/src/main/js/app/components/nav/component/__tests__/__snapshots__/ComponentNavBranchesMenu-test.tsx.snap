@@ -39,6 +39,38 @@ exports[`renders list 1`] = `
       />
     </React.Fragment>
     <React.Fragment
+      key="pull-request-1234"
+    >
+      <li
+        className="dropdown-header navbar-context-meta-branch-menu-title"
+      >
+        branches.pull_requests
+      </li>
+      <ComponentNavBranchesMenuItem
+        branchLike={
+          Object {
+            "base": "master",
+            "branch": "feature",
+            "id": "1234",
+            "name": "qux",
+            "status": Object {
+              "bugs": 0,
+              "codeSmells": 0,
+              "vulnerabilities": 0,
+            },
+          }
+        }
+        component={
+          Object {
+            "key": "component",
+          }
+        }
+        key="qux"
+        onSelect={[Function]}
+        selected={false}
+      />
+    </React.Fragment>
+    <React.Fragment
       key="branch-baz"
     >
       <li
@@ -203,6 +235,11 @@ exports[`searches 1`] = `
     <React.Fragment
       key="branch-foobar"
     >
+      <li
+        className="dropdown-header navbar-context-meta-branch-menu-title"
+      >
+        branches.short_lived_branches
+      </li>
       <ComponentNavBranchesMenuItem
         branchLike={
           Object {

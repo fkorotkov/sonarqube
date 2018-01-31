@@ -23,16 +23,23 @@ jest.mock('../../../../api/branches', () => ({ deleteBranch: jest.fn() }));
 import * as React from 'react';
 import { shallow, ShallowWrapper } from 'enzyme';
 import DeleteBranchModal from '../DeleteBranchModal';
-import { ShortLivingBranch, BranchType } from '../../../../app/types';
+import { ShortLivingBranch, BranchType, BranchLike, PullRequest } from '../../../../app/types';
 import { submit, doAsync, click } from '../../../../helpers/testUtils';
 import { deleteBranch } from '../../../../api/branches';
+
+const branch: ShortLivingBranch = {
+  isMain: false,
+  name: 'feature',
+  mergeBranch: 'master',
+  type: BranchType.SHORT
+};
 
 beforeEach(() => {
   (deleteBranch as jest.Mock<any>).mockClear();
 });
 
 it('renders', () => {
-  const wrapper = shallowRender();
+  const wrapper = shallowRender(branch);
   expect(wrapper).toMatchSnapshot();
   wrapper.setState({ loading: true });
   expect(wrapper).toMatchSnapshot();
@@ -41,7 +48,7 @@ it('renders', () => {
 it('deletes branch', () => {
   (deleteBranch as jest.Mock<any>).mockImplementation(() => Promise.resolve());
   const onDelete = jest.fn();
-  const wrapper = shallowRender(onDelete);
+  const wrapper = shallowRender(branch, onDelete);
 
   submitForm(wrapper);
 
@@ -53,9 +60,30 @@ it('deletes branch', () => {
   });
 });
 
+it('deletes pull request', () => {
+  (deleteBranch as jest.Mock<any>).mockImplementation(() => Promise.resolve());
+  const pullRequest: PullRequest = {
+    base: 'master',
+    branch: 'feature',
+    id: '1234',
+    name: 'Feature PR'
+  };
+  const onDelete = jest.fn();
+  const wrapper = shallowRender(pullRequest, onDelete);
+
+  submitForm(wrapper);
+
+  return doAsync().then(() => {
+    wrapper.update();
+    expect(wrapper.state().loading).toBe(false);
+    expect(onDelete).toBeCalled();
+    expect(deleteBranch).toBeCalledWith({ project: 'foo', pullRequest: '1234' });
+  });
+});
+
 it('cancels', () => {
   const onClose = jest.fn();
-  const wrapper = shallowRender(jest.fn(), onClose);
+  const wrapper = shallowRender(branch, jest.fn(), onClose);
 
   click(wrapper.find('a'));
 
@@ -67,7 +95,7 @@ it('cancels', () => {
 it('stops loading on WS error', () => {
   (deleteBranch as jest.Mock<any>).mockImplementation(() => Promise.reject(null));
   const onDelete = jest.fn();
-  const wrapper = shallowRender(onDelete);
+  const wrapper = shallowRender(branch, onDelete);
 
   submitForm(wrapper);
 
@@ -79,15 +107,18 @@ it('stops loading on WS error', () => {
   });
 });
 
-function shallowRender(onDelete: () => void = jest.fn(), onClose: () => void = jest.fn()) {
-  const branch: ShortLivingBranch = {
-    isMain: false,
-    name: 'feature',
-    mergeBranch: 'master',
-    type: BranchType.SHORT
-  };
+function shallowRender(
+  branchLike: BranchLike,
+  onDelete: () => void = jest.fn(),
+  onClose: () => void = jest.fn()
+) {
   const wrapper = shallow(
-    <DeleteBranchModal branchLike={branch} component="foo" onClose={onClose} onDelete={onDelete} />
+    <DeleteBranchModal
+      branchLike={branchLike}
+      component="foo"
+      onClose={onClose}
+      onDelete={onDelete}
+    />
   );
   (wrapper.instance() as any).mounted = true;
   return wrapper;

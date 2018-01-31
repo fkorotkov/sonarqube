@@ -22,7 +22,7 @@ import { deleteBranch } from '../../../api/branches';
 import { BranchLike } from '../../../app/types';
 import Modal from '../../../components/controls/Modal';
 import { translate, translateWithParameters } from '../../../helpers/l10n';
-import { getBranchLikeQuery } from '../../../helpers/branches';
+import { getBranchLikeQuery, isPullRequest } from '../../../helpers/branches';
 
 interface Props {
   branchLike: BranchLike;
@@ -75,7 +75,9 @@ export default class DeleteBranchModal extends React.PureComponent<Props, State>
 
   render() {
     const { branchLike } = this.props;
-    const header = translate('branches.delete');
+    const header = translate(
+      isPullRequest(branchLike) ? 'branches.pull_request.delete' : 'branches.delete'
+    );
 
     return (
       <Modal contentLabel={header} onRequestClose={this.props.onClose}>
@@ -84,7 +86,12 @@ export default class DeleteBranchModal extends React.PureComponent<Props, State>
         </header>
         <form onSubmit={this.handleSubmit}>
           <div className="modal-body">
-            {translateWithParameters('branches.delete.are_you_sure', branchLike.name)}
+            {translateWithParameters(
+              isPullRequest(branchLike)
+                ? 'branches.pull_request.delete.are_you_sure'
+                : 'branches.delete.are_you_sure',
+              branchLike.name
+            )}
           </div>
           <footer className="modal-foot">
             {this.state.loading && <i className="spinner spacer-right" />}

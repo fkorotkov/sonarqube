@@ -19,6 +19,7 @@
  */
 .branch-status {
   display: flex;
+  justify-content: flex-end;
   align-items: center;
   min-width: 64px;
   line-height: calc(2 * var(--gridSize));

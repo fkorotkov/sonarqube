@@ -147,6 +147,13 @@ export function sortBranchesAsTree(branchLikes: BranchLike[]) {
   }
 }
 
+export function isOrphanPullRequest(pullRequest: PullRequest, branchLikes: BranchLike[]) {
+  const branchesToAttach = branchLikes
+    .filter(branchLike => isMainBranch(branchLike) || isLongLivingBranch(branchLike))
+    .map(branch => branch && branch.name);
+  return !branchesToAttach.includes(pullRequest.base);
+}
+
 export function getBranchLikeQuery(
   branchLike?: BranchLike
 ): { branch?: string; pullRequest?: string } {

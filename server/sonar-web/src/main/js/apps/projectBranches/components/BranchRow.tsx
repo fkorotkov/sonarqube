@@ -28,7 +28,8 @@ import {
   isShortLivingBranch,
   isLongLivingBranch,
   isMainBranch,
-  getBranchLikeDisplayName
+  getBranchLikeDisplayName,
+  isPullRequest
 } from '../../../helpers/branches';
 import { translate } from '../../../helpers/l10n';
 import RenameBranchModal from './RenameBranchModal';
@@ -117,7 +118,9 @@ export default class BranchRow extends React.PureComponent<Props, State> {
               className="js-delete"
               destructive={true}
               onClick={this.handleDeleteClick}>
-              {translate('branches.delete')}
+              {translate(
+                isPullRequest(branchLike) ? 'branches.pull_request.delete' : 'branches.delete'
+              )}
             </ActionsDropdownItem>
           )}
         </ActionsDropdown>
@@ -155,15 +158,15 @@ export default class BranchRow extends React.PureComponent<Props, State> {
 
   render() {
     const { branchLike } = this.props;
+    const indented =
+      (isShortLivingBranch(branchLike) && !branchLike.isOrphan) || isPullRequest(branchLike);
 
     return (
       <tr>
         <td>
           <BranchIcon
             branchLike={branchLike}
-            className={classNames('little-spacer-right', {
-              'big-spacer-left': isShortLivingBranch(branchLike) && !branchLike.isOrphan
-            })}
+            className={classNames('little-spacer-right', { 'big-spacer-left': indented })}
           />
           {getBranchLikeDisplayName(branchLike)}
           {isMainBranch(branchLike) && (

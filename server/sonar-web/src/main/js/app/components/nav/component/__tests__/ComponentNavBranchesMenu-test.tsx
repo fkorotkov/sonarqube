@@ -25,7 +25,8 @@ import {
   MainBranch,
   ShortLivingBranch,
   LongLivingBranch,
-  Component
+  Component,
+  PullRequest
 } from '../../../../types';
 import { elementKeydown } from '../../../../../helpers/testUtils';
 
@@ -39,7 +40,8 @@ it('renders list', () => {
           mainBranch(),
           shortBranch('foo'),
           longBranch('bar'),
-          shortBranch('baz', true)
+          shortBranch('baz', true),
+          pullRequest('qux')
         ]}
         component={component}
         currentBranchLike={mainBranch()}
@@ -99,4 +101,14 @@ function shortBranch(name: string, isOrphan?: true): ShortLivingBranch {
 
 function longBranch(name: string): LongLivingBranch {
   return { isMain: false, name, type: BranchType.LONG };
+}
+
+function pullRequest(name: string): PullRequest {
+  return {
+    base: 'master',
+    branch: 'feature',
+    id: '1234',
+    name,
+    status: { bugs: 0, codeSmells: 0, vulnerabilities: 0 }
+  };
 }

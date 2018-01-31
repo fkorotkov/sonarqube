@@ -27,7 +27,9 @@ import {
   isLongLivingBranch,
   isShortLivingBranch,
   isSameBranchLike,
-  getBranchLikeKey
+  getBranchLikeKey,
+  isPullRequest,
+  isOrphanPullRequest
 } from '../../../../helpers/branches';
 import { translate } from '../../../../helpers/l10n';
 import { getBranchLikeUrl } from '../../../../helpers/urls';
@@ -67,10 +69,14 @@ export default class ComponentNavBranchesMenu extends React.PureComponent<Props,
     window.removeEventListener('click', this.handleClickOutside);
   }
 
-  getFilteredBranchLikes = () =>
-    sortBranchesAsTree(this.props.branchLikes).filter(branchLike =>
-      branchLike.name.toLowerCase().includes(this.state.query.toLowerCase())
+  getFilteredBranchLikes = () => {
+    const query = this.state.query.toLowerCase();
+    return sortBranchesAsTree(this.props.branchLikes).filter(
+      branchLike =>
+        branchLike.name.toLowerCase().includes(query) ||
+        (isPullRequest(branchLike) && branchLike.id.includes(query))
     );
+  };
 
   handleClickOutside = (event: Event) => {
     if (!this.node || !this.node.contains(event.target as HTMLElement)) {
@@ -145,6 +151,13 @@ export default class ComponentNavBranchesMenu extends React.PureComponent<Props,
   getProjectBranchUrl = (branchLike: BranchLike) =>
     getBranchLikeUrl(this.props.component.key, branchLike);
 
+  isOrphan = (branchLike: BranchLike) => {
+    return (
+      (isShortLivingBranch(branchLike) && branchLike.isOrphan) ||
+      (isPullRequest(branchLike) && isOrphanPullRequest(branchLike, this.props.branchLikes))
+    );
+  };
+
   renderSearch = () => (
     <div className="menu-search">
       <SearchBox
@@ -166,15 +179,16 @@ export default class ComponentNavBranchesMenu extends React.PureComponent<Props,
     }
 
     const items = branchLikes.map((branchLike, index) => {
-      // TODO add subtitles for pull request and short-living branches
-
-      // TODO take orhpan PRs into consideration
-      const isOrphan = isShortLivingBranch(branchLike) && branchLike.isOrphan;
+      const isOrphan = this.isOrphan(branchLike);
       const previous = index > 0 ? branchLikes[index - 1] : undefined;
-      // TODO take orhpan PRs into consideration
-      const isPreviousOrphan = isShortLivingBranch(previous) ? previous.isOrphan : false;
+      const isPreviousOrphan = previous !== undefined && this.isOrphan(previous);
       const showDivider = isLongLivingBranch(branchLike) || (isOrphan && !isPreviousOrphan);
       const showOrphanHeader = isOrphan && !isPreviousOrphan;
+      const showPullRequestHeader =
+        !showOrphanHeader && isPullRequest(branchLike) && !isPullRequest(previous);
+      const showShortLivingBranchHeader =
+        !showOrphanHeader && isShortLivingBranch(branchLike) && !isShortLivingBranch(previous);
+
       return (
         <React.Fragment key={getBranchLikeKey(branchLike)}>
           {showDivider && <li className="divider" />}
@@ -184,6 +198,16 @@ export default class ComponentNavBranchesMenu extends React.PureComponent<Props,
               <Tooltip overlay={translate('branches.orphan_branches.tooltip')}>
                 <i className="icon-help spacer-left" />
               </Tooltip>
+            </li>
+          )}
+          {showPullRequestHeader && (
+            <li className="dropdown-header navbar-context-meta-branch-menu-title">
+              {translate('branches.pull_requests')}
+            </li>
+          )}
+          {showShortLivingBranchHeader && (
+            <li className="dropdown-header navbar-context-meta-branch-menu-title">
+              {translate('branches.short_lived_branches')}
             </li>
           )}
           <ComponentNavBranchesMenuItem
