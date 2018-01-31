@@ -29,31 +29,29 @@ export enum BranchType {
   SHORT = 'SHORT'
 }
 
-export interface MainBranch {
+export interface BranchLike {
   analysisDate?: string;
-  isMain: true;
   name: string;
-  status?: {
-    qualityGateStatus: string;
-  };
 }
 
-export interface LongLivingBranch {
-  analysisDate?: string;
+export interface Branch extends BranchLike {
+  isMain: boolean;
+}
+
+export interface MainBranch extends BranchLike {
+  isMain: true;
+}
+
+export interface LongLivingBranch extends Branch {
   isMain: false;
-  name: string;
-  status?: {
-    qualityGateStatus: string;
-  };
+  status?: { qualityGateStatus: string };
   type: BranchType.LONG;
 }
 
-export interface ShortLivingBranch {
-  analysisDate?: string;
+export interface ShortLivingBranch extends Branch {
   isMain: false;
   isOrphan?: true;
   mergeBranch: string;
-  name: string;
   status?: {
     bugs: number;
     codeSmells: number;
@@ -62,7 +60,16 @@ export interface ShortLivingBranch {
   type: BranchType.SHORT;
 }
 
-export type Branch = MainBranch | LongLivingBranch | ShortLivingBranch;
+export interface PullRequest extends BranchLike {
+  base: string;
+  branch: string;
+  id: string;
+  status?: {
+    bugs: number;
+    codeSmells: number;
+    vulnerabilities: number;
+  };
+}
 
 export interface Extension {
   key: string;

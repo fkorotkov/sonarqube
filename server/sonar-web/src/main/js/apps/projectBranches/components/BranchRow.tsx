@@ -19,12 +19,17 @@
  */
 import * as React from 'react';
 import * as classNames from 'classnames';
-import { Branch } from '../../../app/types';
+import { BranchLike } from '../../../app/types';
 import DeleteBranchModal from './DeleteBranchModal';
 import LeakPeriodForm from './LeakPeriodForm';
 import BranchStatus from '../../../components/common/BranchStatus';
 import BranchIcon from '../../../components/icons-components/BranchIcon';
-import { isShortLivingBranch, isLongLivingBranch } from '../../../helpers/branches';
+import {
+  isShortLivingBranch,
+  isLongLivingBranch,
+  isMainBranch,
+  getBranchLikeDisplayName
+} from '../../../helpers/branches';
 import { translate } from '../../../helpers/l10n';
 import RenameBranchModal from './RenameBranchModal';
 import DateFromNow from '../../../components/intl/DateFromNow';
@@ -34,7 +39,7 @@ import ActionsDropdown, {
 } from '../../../components/controls/ActionsDropdown';
 
 interface Props {
-  branch: Branch;
+  branchLike: BranchLike;
   component: string;
   onChange: () => void;
 }
@@ -91,19 +96,19 @@ export default class BranchRow extends React.PureComponent<Props, State> {
   };
 
   renderActions() {
-    const { branch, component } = this.props;
+    const { branchLike, component } = this.props;
     return (
       <td className="thin nowrap text-right">
         <ActionsDropdown className="ig-spacer-left">
-          {isLongLivingBranch(branch) && (
+          {isLongLivingBranch(branchLike) && (
             <ActionsDropdownItem
               className="js-change-leak-period"
               onClick={this.handleChangeLeakClick}>
               {translate('branches.set_leak_period')}
             </ActionsDropdownItem>
           )}
-          {isLongLivingBranch(branch) && !branch.isMain && <ActionsDropdownDivider />}
-          {branch.isMain ? (
+          {isLongLivingBranch(branchLike) && <ActionsDropdownDivider />}
+          {isMainBranch(branchLike) ? (
             <ActionsDropdownItem className="js-rename" onClick={this.handleRenameClick}>
               {translate('branches.rename')}
             </ActionsDropdownItem>
@@ -119,55 +124,57 @@ export default class BranchRow extends React.PureComponent<Props, State> {
 
         {this.state.deleting && (
           <DeleteBranchModal
-            branch={branch}
+            branchLike={branchLike}
             component={component}
             onClose={this.handleDeletingStop}
             onDelete={this.handleChange}
           />
         )}
 
-        {this.state.renaming && (
-          <RenameBranchModal
-            branch={branch}
-            component={component}
-            onClose={this.handleRenamingStop}
-            onRename={this.handleChange}
-          />
-        )}
+        {this.state.renaming &&
+          isMainBranch(branchLike) && (
+            <RenameBranchModal
+              branch={branchLike}
+              component={component}
+              onClose={this.handleRenamingStop}
+              onRename={this.handleChange}
+            />
+          )}
 
-        {this.state.changingLeak && (
-          <LeakPeriodForm
-            branch={branch.name}
-            onClose={this.handleChangingLeakStop}
-            project={component}
-          />
-        )}
+        {this.state.changingLeak &&
+          isLongLivingBranch(branchLike) && (
+            <LeakPeriodForm
+              branch={branchLike.name}
+              onClose={this.handleChangingLeakStop}
+              project={component}
+            />
+          )}
       </td>
     );
   }
 
   render() {
-    const { branch } = this.props;
+    const { branchLike } = this.props;
 
     return (
       <tr>
         <td>
           <BranchIcon
-            branch={branch}
+            branchLike={branchLike}
             className={classNames('little-spacer-right', {
-              'big-spacer-left': isShortLivingBranch(branch) && !branch.isOrphan
+              'big-spacer-left': isShortLivingBranch(branchLike) && !branchLike.isOrphan
             })}
           />
-          {branch.name}
-          {branch.isMain && (
+          {getBranchLikeDisplayName(branchLike)}
+          {isMainBranch(branchLike) && (
             <div className="outline-badge spacer-left">{translate('branches.main_branch')}</div>
           )}
         </td>
         <td className="thin nowrap text-right">
-          <BranchStatus branch={branch} />
+          <BranchStatus branchLike={branchLike} />
         </td>
         <td className="thin nowrap text-right">
-          {branch.analysisDate && <DateFromNow date={branch.analysisDate} />}
+          {branchLike.analysisDate && <DateFromNow date={branchLike.analysisDate} />}
         </td>
         {this.renderActions()}
       </tr>

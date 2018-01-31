@@ -4,7 +4,7 @@ exports[`renders main branch 1`] = `
 <tr>
   <td>
     <BranchIcon
-      branch={
+      branchLike={
         Object {
           "isMain": true,
           "name": "master",
@@ -23,7 +23,7 @@ exports[`renders main branch 1`] = `
     className="thin nowrap text-right"
   >
     <BranchStatus
-      branch={
+      branchLike={
         Object {
           "isMain": true,
           "name": "master",
@@ -55,7 +55,7 @@ exports[`renders short-living branch 1`] = `
 <tr>
   <td>
     <BranchIcon
-      branch={
+      branchLike={
         Object {
           "analysisDate": "2017-09-27T00:05:19+0000",
           "isMain": false,
@@ -72,7 +72,7 @@ exports[`renders short-living branch 1`] = `
     className="thin nowrap text-right"
   >
     <BranchStatus
-      branch={
+      branchLike={
         Object {
           "analysisDate": "2017-09-27T00:05:19+0000",
           "isMain": false,

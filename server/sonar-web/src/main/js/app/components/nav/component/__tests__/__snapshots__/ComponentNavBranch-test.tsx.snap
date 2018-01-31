@@ -10,7 +10,7 @@ exports[`renders main branch 1`] = `
     onClick={[Function]}
   >
     <BranchIcon
-      branch={
+      branchLike={
         Object {
           "isMain": true,
           "name": "master",
@@ -41,7 +41,7 @@ exports[`renders no branch support popup 1`] = `
   className="navbar-context-branches"
 >
   <BranchIcon
-    branch={
+    branchLike={
       Object {
         "isMain": true,
         "name": "master",
@@ -87,7 +87,7 @@ exports[`renders short-living branch 1`] = `
     onClick={[Function]}
   >
     <BranchIcon
-      branch={
+      branchLike={
         Object {
           "isMain": false,
           "mergeBranch": "master",
@@ -134,7 +134,7 @@ exports[`renders single branch popup 1`] = `
   className="navbar-context-branches"
 >
   <BranchIcon
-    branch={
+    branchLike={
       Object {
         "isMain": true,
         "name": "master",
