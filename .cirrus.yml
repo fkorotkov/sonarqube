@@ -1,0 +1,7 @@
+container:
+  image: maven:3.5.2-jdk8
+  cpu: 4
+  memory: 8G
+task:
+  script: mvn package
+  
