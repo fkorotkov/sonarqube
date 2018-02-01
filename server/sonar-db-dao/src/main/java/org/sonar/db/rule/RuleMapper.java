@@ -83,4 +83,10 @@ public interface RuleMapper {
   void updateParameter(RuleParamDto param);
 
   void deleteParameter(Integer paramId);
+
+  List<DeprecatedRuleKeyDto> selectAllDeprecatedRuleKeys();
+
+  void deleteDeprecatedRuleKeys(@Param("uuids") List<String> uuids);
+
+  void insertDeprecatedRuleKey(DeprecatedRuleKeyDto deprecatedRuleKeyDto);
 }

@@ -38,6 +38,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 import static org.sonar.db.DatabaseUtils.executeLargeInputs;
 import static org.sonar.db.DatabaseUtils.executeLargeInputsWithoutOutput;
+import static org.sonar.db.DatabaseUtils.executeLargeUpdates;
 
 public class RuleDao implements Dao {
 
@@ -238,4 +239,15 @@ public class RuleDao implements Dao {
     mapper(session).deleteParameter(ruleParameterId);
   }
 
+  public List<DeprecatedRuleKeyDto> selectAllDeprecatedRuleKeys(DbSession session) {
+    return mapper(session).selectAllDeprecatedRuleKeys();
+  }
+
+  public void deleteDeprecatedRuleKeys(DbSession dbSession, List<String> uuids) {
+    executeLargeUpdates(uuids, mapper(dbSession)::deleteDeprecatedRuleKeys);
+  }
+
+  public void insert(DbSession dbSession, DeprecatedRuleKeyDto deprecatedRuleKey) {
+    mapper(dbSession).insertDeprecatedRuleKey(deprecatedRuleKey);
+  }
 }

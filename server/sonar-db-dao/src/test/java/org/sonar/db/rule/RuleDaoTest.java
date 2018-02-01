@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.function.Consumer;
 import org.apache.ibatis.session.ResultHandler;
 import org.junit.Before;
@@ -39,6 +40,8 @@ import org.sonar.api.rules.RuleType;
 import org.sonar.api.server.debt.DebtRemediationFunction;
 import org.sonar.api.utils.DateUtils;
 import org.sonar.api.utils.System2;
+import org.sonar.core.util.UuidFactory;
+import org.sonar.core.util.UuidFactoryFast;
 import org.sonar.db.DbTester;
 import org.sonar.db.RowNotFoundException;
 import org.sonar.db.es.RuleExtensionId;
@@ -48,6 +51,7 @@ import org.sonar.db.organization.OrganizationTesting;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static org.apache.commons.lang.RandomStringUtils.randomAlphanumeric;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
@@ -62,6 +66,8 @@ public class RuleDaoTest {
 
   private RuleDao underTest = db.getDbClient().ruleDao();
   private OrganizationDto organization;
+  private UuidFactory uuidFactory = UuidFactoryFast.getInstance();
+  private Random random = new Random();;
 
   @Before
   public void before() {
@@ -781,6 +787,112 @@ public class RuleDaoTest {
       .extracting(RuleExtensionForIndexingDto::getRuleKey, RuleExtensionForIndexingDto::getOrganizationUuid, RuleExtensionForIndexingDto::getTags)
       .containsExactlyInAnyOrder(
         tuple(r1.getKey(), organization.getUuid(), r1Extension.getTagsAsString()));
+  }
+
+  @Test
+  public void selectAllDeprecatedRuleKeys() {
+    RuleDefinitionDto r1 = db.rules().insert();
+    RuleDefinitionDto r2 = db.rules().insert();
+
+    DeprecatedRuleKeyDto deprecatedRuleKeyDto1 = new DeprecatedRuleKeyDto()
+      .setUuid(uuidFactory.create())
+      .setOldRepositoryKey(randomAlphanumeric(50))
+      .setOldRuleKey(randomAlphanumeric(50))
+      .setRuleId(r1.getId())
+      .setCreatedAt(1_500_000_000_000L);
+    DeprecatedRuleKeyDto deprecatedRuleKeyDto2 = new DeprecatedRuleKeyDto()
+      .setUuid(uuidFactory.create())
+      .setOldRepositoryKey(randomAlphanumeric(50))
+      .setOldRuleKey(randomAlphanumeric(50))
+      .setRuleId(r2.getId())
+      .setCreatedAt(1_500_000_000_000L);
+
+    underTest.insert(db.getSession(), deprecatedRuleKeyDto1);
+    underTest.insert(db.getSession(), deprecatedRuleKeyDto2);
+    db.getSession().commit();
+
+    List<DeprecatedRuleKeyDto> deprecatedRuleKeyDtos = underTest.selectAllDeprecatedRuleKeys(db.getSession());
+    assertThat(deprecatedRuleKeyDtos).hasSize(2);
+  }
+
+  @Test
+  public void selectAllDeprecatedRuleKeys_return_values_even_if_there_is_no_rule() {
+    db.executeUpdateSql("delete from deprecated_rule_keys");
+
+    DeprecatedRuleKeyDto deprecatedRuleKeyDto1 = new DeprecatedRuleKeyDto()
+      .setUuid(uuidFactory.create())
+      .setOldRepositoryKey(randomAlphanumeric(50))
+      .setOldRuleKey(randomAlphanumeric(50))
+      .setRuleId(random.nextInt(1_000_000))
+      .setCreatedAt(1_500_000_000_000L);
+    DeprecatedRuleKeyDto deprecatedRuleKeyDto2 = new DeprecatedRuleKeyDto()
+      .setUuid(uuidFactory.create())
+      .setOldRepositoryKey(randomAlphanumeric(50))
+      .setOldRuleKey(randomAlphanumeric(50))
+      .setRuleId(random.nextInt(1_000_000))
+      .setCreatedAt(1_500_000_000_000L);
+
+    underTest.insert(db.getSession(), deprecatedRuleKeyDto1);
+    underTest.insert(db.getSession(), deprecatedRuleKeyDto2);
+
+    List<DeprecatedRuleKeyDto> deprecatedRuleKeyDtos = underTest.selectAllDeprecatedRuleKeys(db.getSession());
+    assertThat(deprecatedRuleKeyDtos).hasSize(2);
+    assertThat(deprecatedRuleKeyDtos)
+      .extracting(DeprecatedRuleKeyDto::getNewRepositoryKey, DeprecatedRuleKeyDto::getNewRuleKey)
+      .containsExactly(
+        tuple(null, null),
+        tuple(null, null)
+      );
+  }
+
+  @Test
+  public void deleteDeprecatedRuleKeys() {
+    db.executeUpdateSql("delete from deprecated_rule_keys");
+    DeprecatedRuleKeyDto deprecatedRuleKeyDto1 = new DeprecatedRuleKeyDto()
+      .setUuid(uuidFactory.create())
+      .setOldRepositoryKey(randomAlphanumeric(50))
+      .setOldRuleKey(randomAlphanumeric(50))
+      .setRuleId(1)
+      .setCreatedAt(1_500_000_000_000L);
+    DeprecatedRuleKeyDto deprecatedRuleKeyDto2 = new DeprecatedRuleKeyDto()
+      .setUuid(uuidFactory.create())
+      .setOldRepositoryKey(randomAlphanumeric(50))
+      .setOldRuleKey(randomAlphanumeric(50))
+      .setRuleId(2)
+      .setCreatedAt(1_500_000_000_000L);
+
+    underTest.insert(db.getSession(), deprecatedRuleKeyDto1);
+    underTest.insert(db.getSession(), deprecatedRuleKeyDto2);
+    assertThat(underTest.selectAllDeprecatedRuleKeys(db.getSession())).hasSize(2);
+
+    underTest.deleteDeprecatedRuleKeys(db.getSession(), Arrays.asList(deprecatedRuleKeyDto1.getUuid()));
+    assertThat(underTest.selectAllDeprecatedRuleKeys(db.getSession())).hasSize(1);
+  }
+
+  @Test
+  public void insertDeprecatedRuleKey() {
+    db.executeUpdateSql("delete from deprecated_rule_keys");
+    RuleDefinitionDto r1 = db.rules().insert();
+    DeprecatedRuleKeyDto deprecatedRuleKeyDto = new DeprecatedRuleKeyDto()
+      .setUuid(uuidFactory.create())
+      .setOldRepositoryKey(randomAlphanumeric(50))
+      .setOldRuleKey(randomAlphanumeric(50))
+      .setRuleId(r1.getId())
+      .setCreatedAt(1_500_000_000_000L);
+
+    underTest.insert(db.getSession(), deprecatedRuleKeyDto);
+    db.getSession().commit();
+
+    List<DeprecatedRuleKeyDto> deprecatedRuleKeyDtos = underTest.selectAllDeprecatedRuleKeys(db.getSession());
+    assertThat(deprecatedRuleKeyDtos).hasSize(1);
+    DeprecatedRuleKeyDto deprecatedRuleKeyDto1 = deprecatedRuleKeyDtos.get(0);
+    assertThat(deprecatedRuleKeyDto1.getOldRepositoryKey()).isEqualTo(deprecatedRuleKeyDto.getOldRepositoryKey());
+    assertThat(deprecatedRuleKeyDto1.getOldRuleKey()).isEqualTo(deprecatedRuleKeyDto.getOldRuleKey());
+    assertThat(deprecatedRuleKeyDto1.getNewRepositoryKey()).isEqualTo(r1.getRepositoryKey());
+    assertThat(deprecatedRuleKeyDto1.getNewRuleKey()).isEqualTo(r1.getRuleKey());
+    assertThat(deprecatedRuleKeyDto1.getUuid()).isEqualTo(deprecatedRuleKeyDto.getUuid());
+    assertThat(deprecatedRuleKeyDto1.getCreatedAt()).isEqualTo(1_500_000_000_000L);
+    assertThat(deprecatedRuleKeyDto1.getRuleId()).isEqualTo(r1.getId());
   }
 
   private static class Accumulator<T>  implements Consumer<T> {
