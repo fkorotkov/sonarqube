@@ -29,8 +29,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
+import org.sonarqube.qa.util.Tester;
 import org.sonarqube.qa.util.pageobjects.Navigation;
 import org.sonarqube.tests.Category4Suite;
 import org.sonarqube.ws.client.GetRequest;
@@ -59,6 +61,9 @@ public class BaseIdentityProviderTest {
 
   @ClassRule
   public static RuleChain ruleChain = RuleChain.outerRule(ORCHESTRATOR).around(userRule);
+
+  @Rule
+  public Tester tester = new Tester(ORCHESTRATOR).disableOrganizations();
 
   static String FAKE_PROVIDER_KEY = "fake-base-id-provider";
 
@@ -137,7 +142,13 @@ public class BaseIdentityProviderTest {
     setUserCreatedByAuthPlugin(USER_LOGIN, USER_PROVIDER_ID, USER_NAME, USER_EMAIL);
     userRule.createUser("another", "Another", USER_EMAIL, "another");
 
-    Selenese.runSelenese(ORCHESTRATOR, "/user/BaseIdentityProviderTest/authenticate_user_when_email_already_exists.html");
+    tester.openBrowser()
+      .logIn()
+      .useOAuth2()
+      .asEmailAlreadyExistsPage()
+      .shouldHaveExistingAccount("another")
+      .shouldHaveNewAccount("john")
+      .clickContinue();
 
     userRule.verifyUserExists(USER_LOGIN, USER_NAME, USER_EMAIL);
     userRule.verifyUserExists("another", "Another", null);

@@ -51,7 +51,7 @@ public class OAuth2ParametersImpl implements Oauth2Parameters {
   /**
    * This parameter is used to allow the shift of email from an existing user to the authenticating user
    */
-  private static final String ALLOW_EMAIL_SHIFT_PARAMETER = "allow_email_shift";
+  private static final String ALLOW_EMAIL_SHIFT_PARAMETER = "allowEmailShift";
 
   private static final Type JSON_MAP_TYPE = new TypeToken<HashMap<String, String>>() {
   }.getType();

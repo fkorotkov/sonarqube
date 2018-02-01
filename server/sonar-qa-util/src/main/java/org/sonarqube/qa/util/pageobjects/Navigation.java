@@ -258,6 +258,8 @@ public class Navigation {
     return Selenide.$("#error");
   }
 
+  public EmailAlreadyExistsPage asEmailAlreadyExistsPage() { return new EmailAlreadyExistsPage(); }
+
   private static SelenideElement logInLink() {
     return Selenide.$(By.linkText("Log in"));
   }

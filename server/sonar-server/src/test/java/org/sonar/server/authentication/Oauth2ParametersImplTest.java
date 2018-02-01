@@ -54,7 +54,7 @@ public class Oauth2ParametersImplTest {
   @Test
   public void init_create_cookie_containing_parameters_from_request() {
     when(request.getParameter("return_to")).thenReturn("/settings");
-    when(request.getParameter("allow_email_shift")).thenReturn("true");
+    when(request.getParameter("allowEmailShift")).thenReturn("true");
 
     underTest.init(request, response);
 
@@ -78,7 +78,7 @@ public class Oauth2ParametersImplTest {
   @Test
   public void init_does_not_create_cookie_when_parameters_are_empty() {
     when(request.getParameter("return_to")).thenReturn("");
-    when(request.getParameter("allow_email_shift")).thenReturn("");
+    when(request.getParameter("allowEmailShift")).thenReturn("");
 
     underTest.init(request, response);
 
@@ -88,7 +88,7 @@ public class Oauth2ParametersImplTest {
   @Test
   public void init_does_not_create_cookie_when_parameters_are_null() {
     when(request.getParameter("return_to")).thenReturn(null);
-    when(request.getParameter("allow_email_shift")).thenReturn(null);
+    when(request.getParameter("allowEmailShift")).thenReturn(null);
 
     underTest.init(request, response);
 
@@ -124,8 +124,8 @@ public class Oauth2ParametersImplTest {
   }
 
   @Test
-  public void get_allow_email_shift_parameter() {
-    when(request.getCookies()).thenReturn(new Cookie[]{new Cookie(AUTHENTICATION_COOKIE_NAME, "{\"allow_email_shift\":\"true\"}")});
+  public void get_allowEmailShift_parameter() {
+    when(request.getCookies()).thenReturn(new Cookie[]{new Cookie(AUTHENTICATION_COOKIE_NAME, "{\"allowEmailShift\":\"true\"}")});
 
     Optional<Boolean> allowEmailShift = underTest.getAllowEmailShift(request);
 
@@ -134,7 +134,7 @@ public class Oauth2ParametersImplTest {
   }
 
   @Test
-  public void get_allow_email_shift_is_empty_when_no_cookie() {
+  public void get_allowEmailShift_is_empty_when_no_cookie() {
     when(request.getCookies()).thenReturn(new Cookie[]{});
 
     Optional<Boolean> allowEmailShift = underTest.getAllowEmailShift(request);
@@ -143,7 +143,7 @@ public class Oauth2ParametersImplTest {
   }
 
   @Test
-  public void get_allow_email_shift_is_empty_when_no_value() {
+  public void get_allowEmailShift_is_empty_when_no_value() {
     when(request.getCookies()).thenReturn(new Cookie[]{new Cookie(AUTHENTICATION_COOKIE_NAME, "{}")});
 
     Optional<Boolean> allowEmailShift = underTest.getAllowEmailShift(request);
