@@ -24,11 +24,9 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.function.Consumer;
-import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runners.MethodSorters;
 import org.mockito.ArgumentCaptor;
 import org.sonar.api.rule.Severity;
 import org.sonar.api.rules.RulePriority;
@@ -69,7 +67,6 @@ import static org.sonar.server.qualityprofile.ActiveRuleChange.Type.ACTIVATED;
 import static org.sonar.server.qualityprofile.ActiveRuleChange.Type.DEACTIVATED;
 import static org.sonar.server.qualityprofile.ActiveRuleChange.Type.UPDATED;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RegisterQualityProfilesNotificationTest {
 
   private static final Random RANDOM = new SecureRandom();
