@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.lang.ObjectUtils;
@@ -232,7 +231,9 @@ public class RegisterRules implements Startable {
       newRule = false;
     }
 
-    boolean executeUpdate = mergeRule(ruleDef, rule) | mergeDebtDefinitions(ruleDef, rule) | mergeTags(ruleDef, rule);
+    boolean executeUpdate = mergeRule(ruleDef, rule);
+    executeUpdate |= mergeDebtDefinitions(ruleDef, rule);
+    executeUpdate |= mergeTags(ruleDef, rule);
 
     if (executeUpdate) {
       update(session, rule);
