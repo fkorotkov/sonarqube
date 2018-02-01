@@ -1,5 +1,5 @@
 container:
-  image: maven:3.5.2-jdk8
+  image: maven:3.5.2-jdk-8
   cpu: 4
   memory: 8G
 task:
