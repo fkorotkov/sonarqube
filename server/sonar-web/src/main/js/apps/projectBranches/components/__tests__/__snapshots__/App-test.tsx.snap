@@ -89,6 +89,7 @@ exports[`renders sorted list of branches 1`] = `
             }
           }
           component="foo"
+          isOrphan={false}
           key="branch-master"
           onChange={[MockFunction]}
         />
@@ -102,6 +103,7 @@ exports[`renders sorted list of branches 1`] = `
             }
           }
           component="foo"
+          isOrphan={false}
           key="pull-request-1234"
           onChange={[MockFunction]}
         />
@@ -115,6 +117,7 @@ exports[`renders sorted list of branches 1`] = `
             }
           }
           component="foo"
+          isOrphan={false}
           key="branch-feature"
           onChange={[MockFunction]}
         />
@@ -127,6 +130,7 @@ exports[`renders sorted list of branches 1`] = `
             }
           }
           component="foo"
+          isOrphan={false}
           key="branch-branch-1.0"
           onChange={[MockFunction]}
         />

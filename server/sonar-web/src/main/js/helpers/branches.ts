@@ -25,7 +25,8 @@ import {
   ShortLivingBranch,
   LongLivingBranch,
   PullRequest,
-  MainBranch
+  MainBranch,
+  BranchParameters
 } from '../app/types';
 
 export function isBranch(branchLike?: BranchLike): branchLike is Branch {
@@ -74,9 +75,12 @@ export function isSameBranchLike(a: BranchLike | undefined, b: BranchLike | unde
     return true;
   }
 
-  // short- and long-living branches are compared by name
-  if (isBranch(a) && isBranch(b)) {
-    return a.name === b.name;
+  // short- and long-living branches are compared by type and name
+  if (
+    (isLongLivingBranch(a) && isLongLivingBranch(b)) ||
+    (isShortLivingBranch(a) && isShortLivingBranch(b))
+  ) {
+    return a.type === b.type && a.name === b.name;
   }
 
   // pull requests are compared by id
@@ -154,9 +158,7 @@ export function isOrphanPullRequest(pullRequest: PullRequest, branchLikes: Branc
   return !branchesToAttach.includes(pullRequest.base);
 }
 
-export function getBranchLikeQuery(
-  branchLike?: BranchLike
-): { branch?: string; pullRequest?: string } {
+export function getBranchLikeQuery(branchLike?: BranchLike): BranchParameters {
   if (isShortLivingBranch(branchLike) || isLongLivingBranch(branchLike)) {
     return { branch: branchLike.name };
   } else if (isPullRequest(branchLike)) {

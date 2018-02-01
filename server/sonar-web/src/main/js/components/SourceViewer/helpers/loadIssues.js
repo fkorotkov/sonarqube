@@ -34,14 +34,14 @@ const PAGE_SIZE = 500;
 
 function buildQuery(
   component /*: string */,
-  branch /*: { id?: string; name: string } | void */
+  branchLike /*: { id?: string; name: string } | void */
 ) /*: Query */ {
   return {
     additionalFields: '_all',
     resolved: 'false',
     componentKeys: component,
     s: 'FILE_LINE',
-    ...getBranchLikeQuery(branch)
+    ...getBranchLikeQuery(branchLike)
   };
 }
 

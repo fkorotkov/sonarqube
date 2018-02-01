@@ -20,15 +20,12 @@
 import { getJSON, RequestData } from '../helpers/request';
 import throwGlobalError from '../app/utils/throwGlobalError';
 import { Measure, MeasurePeriod } from '../helpers/measures';
-import { Metric } from '../app/types';
+import { Metric, BranchParameters } from '../app/types';
 import { Period } from '../helpers/periods';
 
-export function getMeasures(data: {
-  componentKey: string;
-  metricKeys: string;
-  branch?: string;
-  pullRequest?: string;
-}): Promise<{ metric: string; value?: string }[]> {
+export function getMeasures(
+  data: { componentKey: string; metricKeys: string } & BranchParameters
+): Promise<{ metric: string; value?: string }[]> {
   return getJSON('/api/measures/component', data).then(r => r.component.measures, throwGlobalError);
 }
 

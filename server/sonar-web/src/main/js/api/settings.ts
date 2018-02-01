@@ -20,6 +20,7 @@
 import { omitBy } from 'lodash';
 import { getJSON, RequestData, post, postJSON } from '../helpers/request';
 import { TYPE_PROPERTY_SET } from '../apps/settings/constants';
+import { BranchParameters } from '../app/types';
 import throwGlobalError from '../app/utils/throwGlobalError';
 
 export function getDefinitions(component?: string): Promise<any> {
@@ -35,12 +36,9 @@ export interface SettingValue {
   values?: string[];
 }
 
-export function getValues(data: {
-  keys: string;
-  component?: string;
-  branch?: string;
-  pullRequest?: string;
-}): Promise<SettingValue[]> {
+export function getValues(
+  data: { keys: string; component?: string } & BranchParameters
+): Promise<SettingValue[]> {
   return getJSON('/api/settings/values', data).then(r => r.settings);
 }
 
@@ -61,22 +59,15 @@ export function setSettingValue(definition: any, value: any, component?: string)
   return post('/api/settings/set', data);
 }
 
-export function setSimpleSettingValue(data: {
-  branch?: string;
-  component?: string;
-  value: string;
-  key: string;
-  pullRequest?: string;
-}): Promise<void | Response> {
+export function setSimpleSettingValue(
+  data: { component?: string; value: string; key: string } & BranchParameters
+): Promise<void | Response> {
   return post('/api/settings/set', data).catch(throwGlobalError);
 }
 
-export function resetSettingValue(data: {
-  keys: string;
-  component?: string;
-  branch?: string;
-  pullRequest?: string;
-}): Promise<void> {
+export function resetSettingValue(
+  data: { keys: string; component?: string } & BranchParameters
+): Promise<void> {
   return post('/api/settings/reset', data);
 }
 

@@ -42,6 +42,7 @@ import ActionsDropdown, {
 interface Props {
   branchLike: BranchLike;
   component: string;
+  isOrphan: boolean;
   onChange: () => void;
 }
 
@@ -157,9 +158,8 @@ export default class BranchRow extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { branchLike } = this.props;
-    const indented =
-      (isShortLivingBranch(branchLike) && !branchLike.isOrphan) || isPullRequest(branchLike);
+    const { branchLike, isOrphan } = this.props;
+    const indented = (isShortLivingBranch(branchLike) || isPullRequest(branchLike)) && !isOrphan;
 
     return (
       <tr>

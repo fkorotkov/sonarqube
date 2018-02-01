@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 import { getJSON, post } from '../helpers/request';
-import { BranchLike, PullRequest } from '../app/types';
+import { BranchLike, PullRequest, BranchParameters } from '../app/types';
 import throwGlobalError from '../app/utils/throwGlobalError';
 
 const samplePullRequest: PullRequest = {
@@ -57,7 +57,7 @@ export function getBranches(project: string): Promise<BranchLike[]> {
   );
 }
 
-export function deleteBranch(data: { project: string; branch?: string; pullRequest?: string }) {
+export function deleteBranch(data: { project: string } & BranchParameters) {
   return post('/api/project_branches/delete', data).catch(throwGlobalError);
 }
 

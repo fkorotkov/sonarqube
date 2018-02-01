@@ -22,7 +22,11 @@ import { deleteBranch } from '../../../api/branches';
 import { BranchLike } from '../../../app/types';
 import Modal from '../../../components/controls/Modal';
 import { translate, translateWithParameters } from '../../../helpers/l10n';
-import { getBranchLikeQuery, isPullRequest } from '../../../helpers/branches';
+import {
+  getBranchLikeQuery,
+  isPullRequest,
+  getBranchLikeDisplayName
+} from '../../../helpers/branches';
 
 interface Props {
   branchLike: BranchLike;
@@ -90,7 +94,7 @@ export default class DeleteBranchModal extends React.PureComponent<Props, State>
               isPullRequest(branchLike)
                 ? 'branches.pull_request.delete.are_you_sure'
                 : 'branches.delete.are_you_sure',
-              branchLike.name
+              getBranchLikeDisplayName(branchLike)
             )}
           </div>
           <footer className="modal-foot">

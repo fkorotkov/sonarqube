@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 import { getJSON } from '../helpers/request';
-import { Paging } from '../app/types';
+import { Paging, BranchParameters } from '../app/types';
 import throwGlobalError from '../app/utils/throwGlobalError';
 
 export interface HistoryItem {
@@ -38,16 +38,16 @@ interface TimeMachineResponse {
   paging: Paging;
 }
 
-export function getTimeMachineData(data: {
-  branch?: string;
-  component: string;
-  from?: string;
-  metrics: string;
-  p?: number;
-  ps?: number;
-  pullRequest?: string;
-  to?: string;
-}): Promise<TimeMachineResponse> {
+export function getTimeMachineData(
+  data: {
+    component: string;
+    from?: string;
+    metrics: string;
+    p?: number;
+    ps?: number;
+    to?: string;
+  } & BranchParameters
+): Promise<TimeMachineResponse> {
   return getJSON('/api/measures/search_history', data).catch(throwGlobalError);
 }
 
@@ -55,12 +55,10 @@ export function getAllTimeMachineData(
   data: {
     component: string;
     metrics: string;
-    branch?: string;
     from?: string;
     p?: number;
-    pullRequest?: string;
     to?: string;
-  },
+  } & BranchParameters,
   prev?: TimeMachineResponse
 ): Promise<TimeMachineResponse> {
   return getTimeMachineData({ ...data, ps: 1000 }).then(r => {

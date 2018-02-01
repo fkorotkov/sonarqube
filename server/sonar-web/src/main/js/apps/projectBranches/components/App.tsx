@@ -23,7 +23,13 @@ import { Link } from 'react-router';
 import BranchRow from './BranchRow';
 import LongBranchesPattern from './LongBranchesPattern';
 import { BranchLike } from '../../../app/types';
-import { sortBranchesAsTree, getBranchLikeKey } from '../../../helpers/branches';
+import {
+  sortBranchesAsTree,
+  getBranchLikeKey,
+  isShortLivingBranch,
+  isPullRequest,
+  isOrphanPullRequest
+} from '../../../helpers/branches';
 import { translate } from '../../../helpers/l10n';
 import { getValues } from '../../../api/settings';
 import { formatMeasure } from '../../../helpers/measures';
@@ -139,6 +145,10 @@ export default class App extends React.PureComponent<Props, State> {
                 <BranchRow
                   branchLike={branchLike}
                   component={component.key}
+                  isOrphan={
+                    (isShortLivingBranch(branchLike) && branchLike.isOrphan) ||
+                    (isPullRequest(branchLike) && isOrphanPullRequest(branchLike, branchLikes))
+                  }
                   key={getBranchLikeKey(branchLike)}
                   onChange={onBranchesChange}
                 />

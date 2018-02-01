@@ -72,6 +72,8 @@ export interface PullRequest extends BranchLike {
   url?: string;
 }
 
+export type BranchParameters = { branch?: string } | { pullRequest?: string };
+
 export interface Extension {
   key: string;
   name: string;

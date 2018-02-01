@@ -18,17 +18,16 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 import { getJSON, parseJSON, request } from '../helpers/request';
+import { BranchParameters } from '../app/types';
 import throwGlobalError from '../app/utils/throwGlobalError';
 
 export function getGlobalNavigation(): Promise<any> {
   return getJSON('/api/navigation/global');
 }
 
-export function getComponentNavigation(data: {
-  componentKey: string;
-  branch?: string;
-  pullRequest?: string;
-}): Promise<any> {
+export function getComponentNavigation(
+  data: { componentKey: string } & BranchParameters
+): Promise<any> {
   return getJSON('/api/navigation/component', data).catch(throwGlobalError);
 }
 

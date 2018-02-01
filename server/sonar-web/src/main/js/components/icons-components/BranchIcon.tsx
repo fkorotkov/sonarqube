@@ -32,11 +32,9 @@ interface Props extends IconProps {
 export default function BranchIcon({ branchLike, ...props }: Props) {
   if (isPullRequest(branchLike)) {
     return <PullRequestIcon {...props} />;
+  } else if (isShortLivingBranch(branchLike)) {
+    return <ShortLivingBranchIcon {...props} />;
+  } else {
+    return <LongLivingBranchIcon {...props} />;
   }
-
-  return isShortLivingBranch(branchLike) ? (
-    <ShortLivingBranchIcon {...props} />
-  ) : (
-    <LongLivingBranchIcon {...props} />
-  );
 }

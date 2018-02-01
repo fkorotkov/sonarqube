@@ -19,8 +19,9 @@
  */
 import throwGlobalError from '../app/utils/throwGlobalError';
 import { getJSON } from '../helpers/request';
+import { BranchParameters } from '../app/types';
 
-export function getTests(data: { branch?: string; pullRequest?: string; testFileKey: string }) {
+export function getTests(data: { testFileKey: string } & BranchParameters) {
   return getJSON('/api/tests/list', data).catch(throwGlobalError);
 }
 

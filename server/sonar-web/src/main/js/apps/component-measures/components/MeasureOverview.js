@@ -32,7 +32,7 @@ import { getBranchLikeQuery } from '../../../helpers/branches';
 /*:: import type { Metric } from '../../../store/metrics/actions'; */
 
 /*:: type Props = {|
-  branchLike?: { id?: string; name: string }, 
+  branchLike?: { id?: string; name: string },
   className?: string,
   component: Component,
   currentUser: { isLoggedIn: boolean },

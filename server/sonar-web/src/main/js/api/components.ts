@@ -19,7 +19,7 @@
  */
 import { getJSON, postJSON, post, RequestData } from '../helpers/request';
 import throwGlobalError from '../app/utils/throwGlobalError';
-import { Paging, Visibility } from '../app/types';
+import { Paging, Visibility, BranchParameters } from '../app/types';
 
 export interface BaseSearchProjectsParameters {
   analyzedBefore?: string;
@@ -117,12 +117,9 @@ export function getComponentLeaves(
   return getComponentTree('leaves', componentKey, metrics, additional);
 }
 
-export function getComponent(data: {
-  componentKey: string;
-  metricKeys: string;
-  branch?: string;
-  pullRequest?: string;
-}): Promise<any> {
+export function getComponent(
+  data: { componentKey: string; metricKeys: string } & BranchParameters
+): Promise<any> {
   return getJSON('/api/measures/component', data).then(r => r.component);
 }
 
@@ -130,11 +127,7 @@ export function getTree(component: string, options: RequestData = {}): Promise<a
   return getJSON('/api/components/tree', { ...options, component });
 }
 
-export function getComponentShow(data: {
-  component: string;
-  branch?: string;
-  pullRequest?: string;
-}): Promise<any> {
+export function getComponentShow(data: { component: string } & BranchParameters): Promise<any> {
   return getJSON('/api/components/show', data);
 }
 
@@ -142,22 +135,14 @@ export function getParents(component: string): Promise<any> {
   return getComponentShow({ component }).then(r => r.ancestors);
 }
 
-export function getBreadcrumbs(data: {
-  component: string;
-  branch?: string;
-  pullRequest?: string;
-}): Promise<any> {
+export function getBreadcrumbs(data: { component: string } & BranchParameters): Promise<any> {
   return getComponentShow(data).then(r => {
     const reversedAncestors = [...r.ancestors].reverse();
     return [...reversedAncestors, r.component];
   });
 }
 
-export function getComponentData(data: {
-  component: string;
-  branch?: string;
-  pullRequest?: string;
-}): Promise<any> {
+export function getComponentData(data: { component: string } & BranchParameters): Promise<any> {
   return getComponentShow(data).then(r => r.component);
 }
 
@@ -258,37 +243,24 @@ export function getSuggestions(
   return getJSON('/api/components/suggestions', data);
 }
 
-export function getComponentForSourceViewer(data: {
-  component: string;
-  branch?: string;
-  pullRequest?: string;
-}): Promise<any> {
+export function getComponentForSourceViewer(
+  data: { component: string } & BranchParameters
+): Promise<any> {
   return getJSON('/api/components/app', data);
 }
 
-export function getSources(data: {
-  key: string;
-  from?: number;
-  to?: number;
-  branch?: string;
-  pullRequest?: string;
-}): Promise<any> {
+export function getSources(
+  data: { key: string; from?: number; to?: number } & BranchParameters
+): Promise<any> {
   return getJSON('/api/sources/lines', data).then(r => r.sources);
 }
 
-export function getDuplications(data: {
-  key: string;
-  branch?: string;
-  pullRequest?: string;
-}): Promise<any> {
+export function getDuplications(data: { key: string } & BranchParameters): Promise<any> {
   return getJSON('/api/duplications/show', data);
 }
 
-export function getTests(data: {
-  sourceFileKey: string;
-  sourceFileLineNumber: number | string;
-  branch?: string;
-  pullRequest?: string;
-}): Promise<any> {
+export function getTests(
+  data: { sourceFileKey: string; sourceFileLineNumber: number | string } & BranchParameters
+): Promise<any> {
   return getJSON('/api/tests/list', data).then(r => r.tests);
 }

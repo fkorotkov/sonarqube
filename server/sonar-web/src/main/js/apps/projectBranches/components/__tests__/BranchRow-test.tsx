@@ -87,7 +87,7 @@ it('deletes pull request', () => {
 
 function shallowRender(branchLike: BranchLike, onChange: () => void = jest.fn()) {
   const wrapper = shallow(
-    <BranchRow branchLike={branchLike} component="foo" onChange={onChange} />
+    <BranchRow branchLike={branchLike} component="foo" isOrphan={false} onChange={onChange} />
   );
   (wrapper.instance() as any).mounted = true;
   return wrapper;
