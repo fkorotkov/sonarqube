@@ -181,6 +181,22 @@ public class RegisterRules implements Startable {
       .flatMap(rule -> SingleDeprecatedRuleKey.from(rule).stream())
       .collect(MoreCollectors.toSet());
 
+    Set<RuleKey> currentKeys = repositories.stream()
+      .flatMap(r -> r.rules().stream())
+      .map(r -> RuleKey.of(r.repository().key(), r.key()))
+      .collect(MoreCollectors.toSet());
+
+    Set<RuleKey> incorrectKeys = newDeprecatedKeys.stream()
+      .map(SingleDeprecatedRuleKey::getOldRuleKeyAsRuleKey)
+      .filter(currentKeys::contains)
+      .collect(MoreCollectors.toSet());
+
+    if (!incorrectKeys.isEmpty()) {
+      throw new IllegalStateException(format("The following keys are declared as deprecated but are still present [%s]", incorrectKeys.stream()
+        .map(RuleKey::toString).collect(Collectors.joining(","))
+      ));
+    }
+
     // DeprecatedKeys that must be deleted
     List<String> uuidsToBeDeleted = difference(currentDeprecatedKeys, newDeprecatedKeys).stream()
       .map(SingleDeprecatedRuleKey::getUuid)

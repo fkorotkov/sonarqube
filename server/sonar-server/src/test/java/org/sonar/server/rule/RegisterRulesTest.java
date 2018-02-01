@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.resources.Language;
 import org.sonar.api.resources.Languages;
@@ -85,6 +86,8 @@ public class RegisterRulesTest {
 
   private System2 system = mock(System2.class);
 
+  @org.junit.Rule
+  public ExpectedException expectedException = ExpectedException.none();
   @org.junit.Rule
   public DbTester dbTester = DbTester.create(system);
   @org.junit.Rule
@@ -599,6 +602,35 @@ public class RegisterRulesTest {
     //assertThat(dbClient.ruleDao().selectAllDefinitions(dbTester.getSession())).hasSize(1); FIXME this must be true when renaming is done
     deprecatedRuleKeys = dbClient.ruleDao().selectAllDeprecatedRuleKeys(dbTester.getSession());
     assertThat(deprecatedRuleKeys).hasSize(0);
+  }
+
+  @Test
+  public void deprecate_a_key_on_existing_rule_throws_ISE() {
+    expectedException.expect(IllegalStateException.class);
+    expectedException.expectMessage("The following keys are declared as deprecated but are still present [fake:rule1]");
+    execute(context -> {
+      NewRepository repo = context.createRepository("fake", "java");
+      repo.createRule("rule1")
+        .setName("One")
+        .setHtmlDescription("Description of One")
+        .setSeverity(BLOCKER)
+        .setInternalKey("config1")
+        .setTags("tag1", "tag2", "tag3")
+        .setType(RuleType.CODE_SMELL)
+        .setStatus(RuleStatus.BETA);
+
+      repo.createRule("newKey")
+        .setName("One")
+        .setHtmlDescription("Description of One")
+        .setSeverity(BLOCKER)
+        .setInternalKey("config1")
+        .setTags("tag1", "tag2", "tag3")
+        .setType(RuleType.CODE_SMELL)
+        .setStatus(RuleStatus.BETA)
+        .addDeprecatedRuleKey("fake", "rule1");
+
+      repo.done();
+    });
   }
 
   @Test
